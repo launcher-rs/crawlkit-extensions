@@ -17,10 +17,15 @@ reqwest = "0.13"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 anyhow = "1"
+rand = { version = "0.9", optional = true }
 
 # firecrawl 依赖（仅启用 firecrawl feature 时编译）
 firecrawl2 = { version = "0.1", optional = true }
-rand = { version = "0.9", optional = true }
+
+# cdp 依赖（仅启用 cdp feature 时编译）
+chromiumoxide = { version = "0.9", default-features = false, features = ["bytes"], optional = true }
+futures = { version = "0.3", optional = true }
+tokio = { version = "1", features = ["sync"], optional = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
@@ -31,6 +36,7 @@ dotenvy = "0.15"
 default = ["jina"]
 jina = []
 firecrawl = ["dep:firecrawl2", "dep:rand"]
+cdp = ["dep:chromiumoxide", "dep:futures", "dep:tokio", "dep:rand"]
 
 [package.metadata.docs.rs]
 all-features = true
