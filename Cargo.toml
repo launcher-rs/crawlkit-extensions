@@ -2,7 +2,6 @@
 name = "crawlkit-extensions"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.86"
 description = "crawlkit 官方第三方服务扩展集 — Jina Reader / Firecrawl 等云爬虫后端"
 license = "MIT"
 repository = "https://github.com/launcher-rs/crawlkit-extensions"
