@@ -1,6 +1,6 @@
 [package]
 name = "crawlkit-extensions"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "crawlkit 官方第三方服务扩展集 — Jina Reader / Firecrawl 等云爬虫后端"
 license = "MIT"
