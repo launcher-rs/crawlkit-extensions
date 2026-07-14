@@ -34,7 +34,7 @@ pub mod firecrawl;
 #[cfg(feature = "cdp")]
 pub mod cdp;
 
-pub use jina::JinaClient;
+pub use jina::{JinaClient, JinaFormat};
 #[cfg(feature = "firecrawl")]
 pub use firecrawl::FirecrawlClient;
 #[cfg(feature = "cdp")]

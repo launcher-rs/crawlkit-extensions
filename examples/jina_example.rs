@@ -10,6 +10,7 @@
 use std::collections::HashMap;
 
 use crawlkit::{Collector, CompositeFetcher, ReqwestClient};
+use crawlkit_core::HttpClient;
 use crawlkit_extensions::jina::JinaClient;
 
 #[tokio::main]

@@ -13,6 +13,7 @@
 //! let client = JinaClient::builder()
 //!     .with_token("your-api-token")
 //!     .with_timeout(std::time::Duration::from_secs(30))
+//!     .with_format(JinaFormat::Html)  // 返回 HTML，兼容 on_html 回调
 //!     .build();
 //!
 //! let response = client.get("https://example.com", &Default::default()).await?;
@@ -28,6 +29,33 @@ use async_trait::async_trait;
 use backon::{ExponentialBuilder, Retryable};
 use crawlkit_core::{CrawlError, HttpClient, Response};
 
+/// Jina Reader 输出格式
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum JinaFormat {
+    /// Markdown 格式（默认，干净的文本内容）
+    Markdown,
+    /// HTML 格式（完整 HTML，可用于 on_html 回调）
+    Html,
+    /// 纯文本格式
+    Text,
+}
+
+impl Default for JinaFormat {
+    fn default() -> Self {
+        Self::Markdown
+    }
+}
+
+impl JinaFormat {
+    fn accept_header(&self) -> &'static str {
+        match self {
+            Self::Markdown => "text/markdown",
+            Self::Html => "text/html",
+            Self::Text => "text/plain",
+        }
+    }
+}
+
 /// Jina Reader API 客户端
 ///
 /// 通过 Builder 模式配置，使用 [`JinaClient::builder`] 创建。
@@ -35,6 +63,7 @@ pub struct JinaClient {
     api_token: Option<String>,
     client: reqwest::Client,
     max_retries: usize,
+    format: JinaFormat,
 }
 
 impl JinaClient {
@@ -54,6 +83,7 @@ impl JinaClient {
             api_token: builder.api_token,
             client,
             max_retries: builder.max_retries,
+            format: builder.format,
         }
     }
 }
@@ -69,6 +99,7 @@ pub struct JinaClientBuilder {
     api_token: Option<String>,
     timeout: Duration,
     max_retries: usize,
+    format: JinaFormat,
 }
 
 impl Default for JinaClientBuilder {
@@ -77,6 +108,7 @@ impl Default for JinaClientBuilder {
             api_token: None,
             timeout: Duration::from_secs(60),
             max_retries: 3,
+            format: JinaFormat::default(),
         }
     }
 }
@@ -106,6 +138,16 @@ impl JinaClientBuilder {
         self
     }
 
+    /// 设置输出格式（默认 Markdown）
+    ///
+    /// - `JinaFormat::Markdown`：干净的 Markdown（适合文本处理）
+    /// - `JinaFormat::Html`：完整 HTML（可用于 `on_html` 回调）
+    /// - `JinaFormat::Text`：纯文本
+    pub fn with_format(mut self, format: JinaFormat) -> Self {
+        self.format = format;
+        self
+    }
+
     /// 构建 JinaClient
     pub fn build(self) -> JinaClient {
         JinaClient::from_builder(self)
@@ -119,15 +161,17 @@ impl HttpClient for JinaClient {
         let reader_url = format!("https://r.jina.ai/{url}");
         let token = self.api_token.clone();
         let max_retries = self.max_retries;
+        let accept = self.format.accept_header().to_string();
 
         let fetch = || {
             let client = client.clone();
             let reader_url = reader_url.clone();
             let token = token.clone();
+            let accept = accept.clone();
             async move {
                 let mut req = client
                     .get(&reader_url)
-                    .header("Accept", "text/markdown");
+                    .header("Accept", &accept);
 
                 if let Some(ref t) = token {
                     req = req.header("Authorization", format!("Bearer {t}"));
