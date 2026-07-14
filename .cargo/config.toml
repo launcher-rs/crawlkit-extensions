@@ -1,0 +1,5 @@
+# 开发时将 crawlkit-core 指向本地路径，实现联调
+# 发布时删除此文件或注释掉 patch 段
+[patch.crates-io]
+crawlkit-core = { path = "../crawlkit/crates/crawlkit-core" }
+crawlkit = { path = "../crawlkit/crates/crawlkit" }

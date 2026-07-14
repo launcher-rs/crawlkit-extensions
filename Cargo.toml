@@ -1,0 +1,36 @@
+[package]
+name = "crawlkit-extensions"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.86"
+description = "crawlkit 官方第三方服务扩展集 — Jina Reader / Firecrawl 等云爬虫后端"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/launcher-rs/crawlkit-extensions"
+keywords = ["crawlkit", "jina", "firecrawl", "web-scraping", "fetcher"]
+categories = ["web-programming", "network"]
+
+[dependencies]
+crawlkit-core = "0.3"
+async-trait = "0.1"
+backon = "1"
+reqwest = "0.13"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+
+# firecrawl 依赖（仅启用 firecrawl feature 时编译）
+firecrawl2 = { version = "0.1", optional = true }
+rand = { version = "0.9", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+crawlkit = "0.3"
+dotenvy = "0.15"
+
+[features]
+default = ["jina"]
+jina = []
+firecrawl = ["dep:firecrawl2", "dep:rand"]
+
+[package.metadata.docs.rs]
+all-features = true
