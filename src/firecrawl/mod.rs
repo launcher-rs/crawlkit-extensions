@@ -31,6 +31,7 @@ use rand::Rng;
 ///
 /// 支持多 token 轮换，适合免费套餐多账号场景。
 pub struct FirecrawlClient {
+    name: String,
     api_tokens: Vec<String>,
     max_retries: usize,
 }
@@ -44,6 +45,7 @@ impl FirecrawlClient {
 
 /// FirecrawlClient 构建器
 pub struct FirecrawlClientBuilder {
+    name: String,
     api_tokens: Vec<String>,
     max_retries: usize,
 }
@@ -51,6 +53,7 @@ pub struct FirecrawlClientBuilder {
 impl Default for FirecrawlClientBuilder {
     fn default() -> Self {
         Self {
+            name: "firecrawl".to_string(),
             api_tokens: Vec::new(),
             max_retries: 3,
         }
@@ -58,6 +61,12 @@ impl Default for FirecrawlClientBuilder {
 }
 
 impl FirecrawlClientBuilder {
+    /// 设置客户端名称（用于日志和 CompositeFetcher 识别，默认 "firecrawl"）
+    pub fn with_name(mut self, name: impl Into<String>) -> Self {
+        self.name = name.into();
+        self
+    }
+
     /// 设置 API token 列表（每次请求随机选择一个）
     pub fn with_tokens(mut self, tokens: &[impl Into<String> + Clone]) -> Self {
         self.api_tokens = tokens.iter().map(|t| t.clone().into()).collect();
@@ -88,6 +97,7 @@ impl FirecrawlClientBuilder {
             anyhow::bail!("Firecrawl 至少需要一个 API Token");
         }
         Ok(FirecrawlClient {
+            name: self.name,
             api_tokens: self.api_tokens,
             max_retries: self.max_retries,
         })
@@ -151,6 +161,6 @@ impl HttpClient for FirecrawlClient {
     }
 
     fn name(&self) -> &str {
-        "firecrawl"
+        &self.name
     }
 }

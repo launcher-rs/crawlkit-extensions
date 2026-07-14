@@ -14,7 +14,7 @@
 
 use std::collections::HashMap;
 
-use crawlkit::{Collector, CompositeFetcher, ReqwestClient};
+use crawlkit::{Collector, CompositeFetcher, HttpClient, ReqwestClient};
 use crawlkit_extensions::firecrawl::FirecrawlClient;
 
 #[tokio::main]

@@ -60,6 +60,7 @@ impl JinaFormat {
 ///
 /// 通过 Builder 模式配置，使用 [`JinaClient::builder`] 创建。
 pub struct JinaClient {
+    name: String,
     api_token: Option<String>,
     client: reqwest::Client,
     max_retries: usize,
@@ -80,6 +81,7 @@ impl JinaClient {
             .expect("failed to build reqwest client");
 
         Self {
+            name: builder.name,
             api_token: builder.api_token,
             client,
             max_retries: builder.max_retries,
@@ -96,6 +98,7 @@ impl Default for JinaClient {
 
 /// JinaClient 构建器
 pub struct JinaClientBuilder {
+    name: String,
     api_token: Option<String>,
     timeout: Duration,
     max_retries: usize,
@@ -105,6 +108,7 @@ pub struct JinaClientBuilder {
 impl Default for JinaClientBuilder {
     fn default() -> Self {
         Self {
+            name: "jina".to_string(),
             api_token: None,
             timeout: Duration::from_secs(60),
             max_retries: 3,
@@ -114,6 +118,12 @@ impl Default for JinaClientBuilder {
 }
 
 impl JinaClientBuilder {
+    /// 设置客户端名称（用于日志和 CompositeFetcher 识别，默认 "jina"）
+    pub fn with_name(mut self, name: impl Into<String>) -> Self {
+        self.name = name.into();
+        self
+    }
+
     /// 设置 API token（可选，免费额度无需 token）
     pub fn with_token(mut self, token: impl Into<String>) -> Self {
         self.api_token = Some(token.into());
@@ -218,6 +228,6 @@ impl HttpClient for JinaClient {
     }
 
     fn name(&self) -> &str {
-        "jina"
+        &self.name
     }
 }

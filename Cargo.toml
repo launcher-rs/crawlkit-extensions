@@ -37,5 +37,17 @@ jina = []
 firecrawl = ["dep:firecrawl2", "dep:rand"]
 cdp = ["dep:chromiumoxide", "dep:futures", "dep:tokio", "dep:rand"]
 
+[[example]]
+name = "jina_example"
+required-features = ["jina"]
+
+[[example]]
+name = "firecrawl_example"
+required-features = ["firecrawl"]
+
+[[example]]
+name = "cdp_example"
+required-features = ["cdp"]
+
 [package.metadata.docs.rs]
 all-features = true
