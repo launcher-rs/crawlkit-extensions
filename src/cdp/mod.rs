@@ -47,20 +47,15 @@ use futures::StreamExt;
 use tokio::sync::RwLock;
 
 /// 端点选择策略
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum CdpStrategy {
     /// 随机选择一个可用端点
     Random,
     /// 轮询（Round-Robin），依次使用每个端点
+    #[default]
     RoundRobin,
     /// 故障转移（Failover），按优先级顺序，失败后切到下一个
     Failover,
-}
-
-impl Default for CdpStrategy {
-    fn default() -> Self {
-        Self::RoundRobin
-    }
 }
 
 /// 单个 CDP 端点状态（池内部使用）
@@ -466,5 +461,31 @@ impl HttpClient for CdpPool {
 
     fn name(&self) -> &str {
         "cdp-pool"
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cdp_strategy_default() {
+        assert_eq!(CdpStrategy::default(), CdpStrategy::RoundRobin);
+    }
+
+    #[test]
+    fn test_cdp_builder_defaults() {
+        let builder = CdpClientBuilder::default();
+        assert_eq!(builder.endpoint, "http://127.0.0.1:9222");
+        assert!(builder.name.is_none());
+        assert_eq!(builder.navigation_timeout, Duration::from_secs(30));
+    }
+
+    #[test]
+    fn test_cdp_pool_builder_defaults() {
+        let builder = CdpPoolBuilder::default();
+        assert!(builder.endpoints.is_empty());
+        assert_eq!(builder.strategy, CdpStrategy::RoundRobin);
+        assert_eq!(builder.navigation_timeout, Duration::from_secs(30));
     }
 }

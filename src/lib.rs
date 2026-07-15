@@ -15,7 +15,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! crawlkit-extensions = "0.1"
+//! crawlkit-extensions = "0.2"
 //! ```
 //!
 //! ```rust

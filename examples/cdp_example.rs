@@ -106,8 +106,7 @@ async fn main() -> anyhow::Result<()> {
         eprintln!("  [{}] 失败: {}", name, err);
     });
 
-    let collector = Collector::with_client(fetcher);
-    let mut collector = collector;
+    let mut collector = Collector::with_client(fetcher);
     collector.on_html(|ctx| {
         println!("  [HTML] {} - {} 字节", ctx.url, ctx.body.len());
     });

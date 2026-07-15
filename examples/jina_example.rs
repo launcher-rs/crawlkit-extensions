@@ -41,8 +41,7 @@ async fn main() -> anyhow::Result<()> {
 
     let fetcher = CompositeFetcher::new(vec![Box::new(reqwest_client), Box::new(jina)]);
 
-    let collector = Collector::with_client(fetcher);
-    let mut collector = collector;
+    let mut collector = Collector::with_client(fetcher);
     collector.on_html(|ctx| {
         println!("  [HTML] {} - {} 字节", ctx.url, ctx.body.len());
     });

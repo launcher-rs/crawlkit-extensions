@@ -6,14 +6,15 @@
 //! # 示例
 //!
 //! ```rust,no_run
-//! use crawlkit_extensions::jina::JinaClient;
+//! use crawlkit_core::HttpClient;
+//! use crawlkit_extensions::jina::{JinaClient, JinaFormat};
 //!
 //! # #[tokio::main]
 //! # async fn main() -> anyhow::Result<()> {
 //! let client = JinaClient::builder()
 //!     .with_token("your-api-token")
 //!     .with_timeout(std::time::Duration::from_secs(30))
-//!     .with_format(JinaFormat::Html)  // 返回 HTML，兼容 on_html 回调
+//!     .with_format(JinaFormat::Html)
 //!     .build();
 //!
 //! let response = client.get("https://example.com", &Default::default()).await?;
@@ -30,20 +31,15 @@ use backon::{ExponentialBuilder, Retryable};
 use crawlkit_core::{CrawlError, HttpClient, Response};
 
 /// Jina Reader 输出格式
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum JinaFormat {
     /// Markdown 格式（默认，干净的文本内容）
+    #[default]
     Markdown,
     /// HTML 格式（完整 HTML，可用于 on_html 回调）
     Html,
     /// 纯文本格式
     Text,
-}
-
-impl Default for JinaFormat {
-    fn default() -> Self {
-        Self::Markdown
-    }
 }
 
 impl JinaFormat {
@@ -229,5 +225,45 @@ impl HttpClient for JinaClient {
 
     fn name(&self) -> &str {
         &self.name
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_jina_format_default() {
+        assert_eq!(JinaFormat::default(), JinaFormat::Markdown);
+    }
+
+    #[test]
+    fn test_jina_format_accept_header() {
+        assert_eq!(JinaFormat::Markdown.accept_header(), "text/markdown");
+        assert_eq!(JinaFormat::Html.accept_header(), "text/html");
+        assert_eq!(JinaFormat::Text.accept_header(), "text/plain");
+    }
+
+    #[test]
+    fn test_jina_builder_defaults() {
+        let client = JinaClient::builder().build();
+        assert_eq!(client.name(), "jina");
+        assert!(client.api_token.is_none());
+    }
+
+    #[test]
+    fn test_jina_builder_with_token() {
+        let client = JinaClient::builder()
+            .with_token("test-token")
+            .build();
+        assert_eq!(client.api_token.as_deref(), Some("test-token"));
+    }
+
+    #[test]
+    fn test_jina_builder_with_name() {
+        let client = JinaClient::builder()
+            .with_name("custom")
+            .build();
+        assert_eq!(client.name(), "custom");
     }
 }

@@ -6,6 +6,7 @@
 //! # 示例
 //!
 //! ```rust,no_run
+//! use crawlkit_core::HttpClient;
 //! use crawlkit_extensions::firecrawl::FirecrawlClient;
 //!
 //! # #[tokio::main]
@@ -162,5 +163,33 @@ impl HttpClient for FirecrawlClient {
 
     fn name(&self) -> &str {
         &self.name
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_firecrawl_builder_defaults() {
+        let builder = FirecrawlClientBuilder::default();
+        assert_eq!(builder.name, "firecrawl");
+        assert!(builder.api_tokens.is_empty());
+        assert_eq!(builder.max_retries, 3);
+    }
+
+    #[test]
+    fn test_firecrawl_builder_requires_token() {
+        let result = FirecrawlClientBuilder::default().build();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_firecrawl_builder_with_tokens() {
+        let client = FirecrawlClient::builder()
+            .with_tokens(&["token1", "token2"])
+            .build()
+            .unwrap();
+        assert_eq!(client.api_tokens.len(), 2);
     }
 }
