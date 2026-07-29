@@ -69,10 +69,22 @@ async fn resolve_browser_ws(endpoint: &str) -> anyhow::Result<String> {
         .json()
         .await
         .map_err(|e| anyhow::anyhow!("解析 /json/version 失败: {}", e))?;
-    info["webSocketDebuggerUrl"]
+
+    let ws_url = info["webSocketDebuggerUrl"]
         .as_str()
-        .map(|s| s.to_string())
-        .ok_or_else(|| anyhow::anyhow!("响应缺少 webSocketDebuggerUrl"))
+        .ok_or_else(|| anyhow::anyhow!("响应缺少 webSocketDebuggerUrl"))?
+        .to_string();
+
+    // Lightpanda 返回 ws://0.0.0.0:9222/，Windows 上无法连接 0.0.0.0，替换为 localhost
+    let ws_url = if ws_url.contains("0.0.0.0") {
+        let replaced = ws_url.replace("0.0.0.0", "127.0.0.1");
+        eprintln!("[CDP] ws://0.0.0.0 替换为 127.0.0.1: {}", replaced);
+        replaced
+    } else {
+        ws_url
+    };
+
+    Ok(ws_url)
 }
 
 /// 发送 CDP 命令并等待响应
