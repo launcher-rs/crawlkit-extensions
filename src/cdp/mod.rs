@@ -61,6 +61,19 @@ async fn resolve_browser_ws(endpoint: &str) -> anyhow::Result<String> {
     } else {
         endpoint.to_string()
     };
+
+    // 从原端点 URL 中提取 host（用于替换 0.0.0.0）
+    let host = http_url
+        .trim_start_matches("http://")
+        .trim_start_matches("https://")
+        .split('/')
+        .next()
+        .unwrap_or("127.0.0.1")
+        .split(':')
+        .next()
+        .unwrap_or("127.0.0.1")
+        .to_string();
+
     let version_url = format!("{}/json/version", http_url.trim_end_matches('/'));
     let resp = reqwest::get(&version_url)
         .await
@@ -75,10 +88,10 @@ async fn resolve_browser_ws(endpoint: &str) -> anyhow::Result<String> {
         .ok_or_else(|| anyhow::anyhow!("响应缺少 webSocketDebuggerUrl"))?
         .to_string();
 
-    // Lightpanda 返回 ws://0.0.0.0:9222/，Windows 上无法连接 0.0.0.0，替换为 localhost
+    // Lightpanda 返回 ws://0.0.0.0:9222/，Windows 无法连接 0.0.0.0，替换为实际请求的 host
     let ws_url = if ws_url.contains("0.0.0.0") {
-        let replaced = ws_url.replace("0.0.0.0", "127.0.0.1");
-        eprintln!("[CDP] ws://0.0.0.0 替换为 127.0.0.1: {}", replaced);
+        let replaced = ws_url.replace("0.0.0.0", &host);
+        eprintln!("[CDP] webSocketDebuggerUrl 含 0.0.0.0，已替换为 {}: {}", host, replaced);
         replaced
     } else {
         ws_url
